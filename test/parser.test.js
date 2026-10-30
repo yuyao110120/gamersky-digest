@@ -31,7 +31,7 @@ test('parseHomePage：77 条（6 头条 + 71 列表）、3 页、去重、URL �
 
   const urls = home.items.map((item) => item.url);
   assert.equal(new Set(urls).size, urls.length);
-  assert.equal(urls.filter((url) => url.includes('?')).length, 0);
+  assert.equal(urls.filter((url) => /[?&]toutiao\b/.test(url)).length, 0, '统计参数 ?toutiao 应被去掉');
   assert.ok(urls.every((url) => /^https:\/\//.test(url)));
 
   assert.equal(home.items[0].url, 'https://www.gamersky.com/news/202610/2236740.shtml');
@@ -47,6 +47,8 @@ test('parseHomePage：77 条（6 头条 + 71 列表）、3 页、去重、URL �
 
   const topic = home.items.find((item) => item.type === 'topic');
   assert.match(topic.url, /\/zt\/assemble\/hottopic/);
+  assert.match(topic.url, /topicId=626/, '专题链接必须保留 topicId，否则打开原文会落到空页面');
+  assert.match(topic.url, /gsAppPageName=NewsRecommendTopic/);
   const communities = home.items.filter((item) => item.type === 'community');
   assert.ok(communities.every((item) => item.url.startsWith('https://club.gamersky.com/')));
 
@@ -177,6 +179,15 @@ test('canonicalizeUrl / classifyUrl', () => {
   assert.equal(
     canonicalizeUrl('/news/202610/2237593.shtml?toutiao#x'),
     'https://www.gamersky.com/news/202610/2237593.shtml'
+  );
+  // 专题/社区的业务参数要保留
+  assert.equal(
+    canonicalizeUrl('https://www.gamersky.com/zt/assemble/hottopic/?topicId=626&gsAppPageName=NewsRecommendTopic&appNavigationBarStyle=kNoneBar'),
+    'https://www.gamersky.com/zt/assemble/hottopic/?topicId=626&gsAppPageName=NewsRecommendTopic&appNavigationBarStyle=kNoneBar'
+  );
+  assert.equal(
+    canonicalizeUrl('https://club.gamersky.com/activity/1608504?club=163'),
+    'https://club.gamersky.com/activity/1608504?club=163'
   );
   assert.equal(canonicalizeUrl('javascript:;'), null);
   assert.equal(canonicalizeUrl('https://gamersky.com/'), 'https://www.gamersky.com/');
