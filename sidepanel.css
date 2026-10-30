@@ -568,6 +568,30 @@ body {
   line-height: 1.6;
 }
 
+/* 多页文章：分批加载按钮与分页进度 */
+.load-more-pages {
+  display: block;
+  width: 100%;
+  margin: 18px 0 0;
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.load-more-pages:hover:not(:disabled) { background: var(--hover); }
+.load-more-pages:disabled { color: var(--muted); cursor: default; }
+
+.article-page-note {
+  margin-top: 10px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .notice {
   padding: 16px;
   border: 1px solid var(--border);

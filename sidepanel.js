@@ -4,7 +4,7 @@ import * as fmt from './lib/format.js';
 import { parseArticlePage } from './lib/parser.js';
 import { fetchArticleHtml } from './lib/fetcher.js';
 
-var MAX_ARTICLE_PAGES = 5;
+var PAGE_BATCH_SIZE = 5;
 var SITE_URL = 'https://www.gamersky.com/';
 
 var state = {
@@ -537,8 +537,17 @@ async function loadArticle(item) {
 
   try {
     var cached = await store.getCachedArticle(item.url);
-    if (cached) {
-      state.article = cached;
+    if (cached && typeof cached.totalPages === 'number' && Array.isArray(cached.allPages)) {
+      state.article = {
+        title: cached.title,
+        meta: cached.meta || {},
+        blocks: cached.blocks || [],
+        allPages: cached.allPages,
+        nextIndex: cached.nextIndex || 0,
+        totalPages: cached.totalPages,
+        loadingMore: false,
+        loadMoreError: '',
+      };
       state.articleLoading = false;
       render();
       return;
@@ -555,14 +564,18 @@ async function loadArticle(item) {
       render();
       return;
     }
-    var article = await mergePages(parsed);
-    if (!article.title) article.title = item.title;
+    var article = createArticleState(parsed, item);
     state.article = article;
     state.articleLoading = false;
-    try {
-      await store.cacheArticle(item.url, article, Date.now());
-    } catch (err) { /* 忽略 */ }
     render();
+    if (article.allPages.length) {
+      // 首屏连同第一页共展开 5 页；更多分页由「加载更多页」按钮分批加载
+      await loadPageBatch(article, Math.min(PAGE_BATCH_SIZE - 1, article.allPages.length));
+    } else {
+      try {
+        await store.cacheArticle(item.url, serializeArticle(article), Date.now());
+      } catch (err) { /* 忽略 */ }
+    }
   } catch (err) {
     state.articleLoading = false;
     state.articleError = String((err && err.message) || err);
@@ -570,27 +583,58 @@ async function loadArticle(item) {
   }
 }
 
-async function mergePages(parsed) {
-  var blocks = (parsed.blocks || []).slice();
-  var extraPages = (parsed.pageUrls || []).slice(0, MAX_ARTICLE_PAGES - 1);
-  var truncated = (parsed.pageUrls || []).length > extraPages.length;
-  for (var i = 0; i < extraPages.length; i++) {
+function createArticleState(parsed, item) {
+  var pageUrls = parsed.pageUrls || [];
+  return {
+    title: parsed.title || (item ? item.title : ''),
+    meta: parsed.meta || {},
+    blocks: (parsed.blocks || []).slice(),
+    allPages: pageUrls.slice(),
+    nextIndex: 0,
+    totalPages: pageUrls.length + 1,
+    loadingMore: false,
+    loadMoreError: '',
+  };
+}
+
+function serializeArticle(article) {
+  return {
+    title: article.title,
+    meta: article.meta || {},
+    blocks: article.blocks || [],
+    allPages: article.allPages || [],
+    nextIndex: article.nextIndex || 0,
+    totalPages: article.totalPages || 1,
+  };
+}
+
+async function loadPageBatch(article, count) {
+  if (!article || article.loadingMore) return;
+  var remaining = article.allPages.length - article.nextIndex;
+  if (remaining <= 0) return;
+  article.loadingMore = true;
+  article.loadMoreError = '';
+  renderArticle();
+  var goal = Math.min(count, remaining);
+  for (var i = 0; i < goal; i++) {
+    var page = article.allPages[article.nextIndex];
     try {
-      var html = await fetchArticleHtml(extraPages[i].url);
-      var pageParsed = parseArticlePage(html, extraPages[i].url);
-      if (pageParsed.kind === 'article') blocks = blocks.concat(pageParsed.blocks || []);
+      var html = await fetchArticleHtml(page.url);
+      var parsed = parseArticlePage(html, page.url);
+      if (parsed.kind === 'article') article.blocks = article.blocks.concat(parsed.blocks || []);
+      article.nextIndex += 1;
     } catch (err) {
-      truncated = true;
+      article.loadMoreError = '第 ' + page.page + ' 页加载失败：' + String((err && err.message) || err);
       break;
     }
   }
-  return {
-    title: parsed.title || '',
-    meta: parsed.meta || {},
-    blocks: blocks,
-    truncated: truncated,
-    fetchedAt: Date.now(),
-  };
+  article.loadingMore = false;
+  renderArticle();
+  if (state.articleItem) {
+    try {
+      await store.cacheArticle(state.articleItem.url, serializeArticle(article), Date.now());
+    } catch (err) { /* 忽略 */ }
+  }
 }
 
 function renderArticle() {
@@ -650,8 +694,24 @@ function renderArticle() {
   if (!blocks.length) {
     container.appendChild(el('div', 'article-note', '正文没能解析出来，点右上角「原文」查看。'));
   }
-  if (article.truncated) {
-    container.appendChild(el('div', 'article-note', '文章有更多分页，当前只加载了前 ' + MAX_ARTICLE_PAGES + ' 页，完整内容请打开原文。'));
+  if (article.totalPages > 1) {
+    var loadedPages = article.nextIndex + 1;
+    var remainingPages = article.allPages.length - article.nextIndex;
+    if (remainingPages > 0) {
+      var moreBtn = el('button', 'load-more-pages', article.loadingMore ? '正在加载分页…' : '加载更多页（还剩 ' + remainingPages + ' 页）');
+      moreBtn.type = 'button';
+      moreBtn.disabled = !!article.loadingMore;
+      moreBtn.addEventListener('click', function () {
+        loadPageBatch(article, PAGE_BATCH_SIZE);
+      });
+      container.appendChild(moreBtn);
+      if (article.loadMoreError) {
+        container.appendChild(el('div', 'article-note', article.loadMoreError + '，点上面按钮重试。'));
+      }
+      container.appendChild(el('div', 'article-page-note', '已显示 ' + loadedPages + ' / ' + article.totalPages + ' 页'));
+    } else {
+      container.appendChild(el('div', 'article-page-note', '已加载全部 ' + article.totalPages + ' 页'));
+    }
   }
 }
 
