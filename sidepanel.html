@@ -11,17 +11,16 @@
   <div id="app">
     <header class="toolbar">
       <div class="toolbar-top">
-        <div class="brand">
-          <img class="brand-logo" src="icons/icon-48.png" alt="" aria-hidden="true">
-          <span class="brand-name">游民要闻</span>
-          <span class="brand-date" id="today"></span>
+        <div class="toolbar-info">
+          <span class="toolbar-date" id="today"></span>
+          <span class="toolbar-sep" aria-hidden="true">·</span>
+          <span class="statusline" id="statusline"></span>
         </div>
         <div class="toolbar-actions">
           <button id="btn-refresh" class="icon-btn" type="button" title="立即刷新" aria-label="立即刷新">⟳</button>
           <button id="btn-menu" class="icon-btn" type="button" title="更多" aria-label="更多">⋯</button>
         </div>
       </div>
-      <div class="statusline" id="statusline"></div>
     </header>
 
     <div class="banner" id="banner" hidden></div>
