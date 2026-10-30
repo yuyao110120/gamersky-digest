@@ -62,9 +62,10 @@ lib/parser.js         纯函数解析器（首页 / 文章）
 lib/fetcher.js        网络请求（超时、失败分类）
 lib/store.js          chrome.storage 读写 + 纯合并/裁剪函数
 lib/format.js         时间与文案格式化
-icons/                占位图标（tools/make-icons.py 生成）
+icons/                像素风图标：logo.svg + 16/32/48/128 PNG（tools/make-logo.py 生成）
+assets/favicon.ico    游民星空原始 favicon（图标生成源文件）
 test/                 node --test 单测 + fixtures
-tools/make-icons.py   图标生成脚本（纯标准库）
+tools/make-logo.py    从 favicon 生成像素 SVG + PNG 的脚本（纯标准库）
 ```
 
 ## 开发
@@ -72,7 +73,7 @@ tools/make-icons.py   图标生成脚本（纯标准库）
 - 依赖只为测试：`npm install`（jsdom）
 - 跑测试：`npm test`
 - 解析器 fixture 在 `test/fixtures/`（首页 / 文章 / 多页 / 重定向壳 / JSONP 各一份）。站点改版后，抓一份新页面替换对应 fixture，跑测试即可定位选择器问题
-- 图标：`python3 tools/make-icons.py`（不需要第三方库）
+- 图标：`python3 tools/make-logo.py`（读 `assets/favicon.ico`，生成 `icons/logo.svg` 与各尺寸 PNG，不需要第三方库）
 
 ## 已知限制
 
@@ -96,6 +97,7 @@ tools/make-icons.py   图标生成脚本（纯标准库）
 - **无构建原生 MV3**：个人工具、依赖少、改完刷新即可
 - **后台解析用 offscreen**：MV3 Service Worker 没有 DOM，用 `offscreen` 文档跑 DOMParser
 - **解析集中在一个文件**：选择器失效时只改一处，fixture 单测兜底
+- **图标来自站点 favicon**：解析游民星空的 16×16 ICO，去掉上世纪的 1px 灰色斜面边框，重绘为纯 `<rect>` 的像素风 SVG（`icons/logo.svg`，任意尺寸都清晰）；Chrome 清单图标不支持 SVG，所以再栅格化为 16/32/48/128 的 PNG
 - **不静默失败**：保留上次数据 + 明确提示，避免「看起来正常其实是空的」
 
 ## 版本

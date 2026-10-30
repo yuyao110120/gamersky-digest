@@ -119,12 +119,13 @@ body {
   min-width: 0;
 }
 
-.brand-mark {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  background: var(--accent);
+.brand-logo {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
   flex: 0 0 auto;
+  image-rendering: pixelated;
+  display: block;
 }
 
 .brand-name {
