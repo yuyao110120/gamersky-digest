@@ -248,10 +248,15 @@ body {
 }
 
 .section-label {
+  position: sticky;
+  top: 0;
+  z-index: 6;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 16px 14px 8px;
+  padding: 12px 14px 7px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
   font-family: "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", "SimSun", "STSong", serif;
   font-size: 15px;
   font-weight: 700;
@@ -271,74 +276,129 @@ body {
 .section-label.headline { color: var(--accent); }
 
 .item {
-  display: block;
+  position: relative;
+  display: flex;
+  align-items: center;
   width: 100%;
+  height: 36px;
   text-align: left;
   border: 0;
   border-bottom: 1px solid var(--border);
   background: transparent;
   color: var(--text);
   font: inherit;
-  padding: 10px 14px;
+  padding: 0 12px 0 0;
   cursor: pointer;
 }
 
 .item:hover { background: var(--hover); }
 .item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 
-.item-title {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.45;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+/* 左侧：紧凑时间（s / m / h / 10-29） */
+.item-time {
+  flex: 0 0 46px;
+  padding-right: 9px;
+  text-align: right;
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  white-space: nowrap;
   overflow: hidden;
 }
 
-.item.unread .item-title::before {
+/* 时间轴：竖线 + 节点（未读为实心橙点，已读为灰点） */
+.item-axis {
+  position: relative;
+  flex: 0 0 15px;
+  align-self: stretch;
+  background: linear-gradient(color-mix(in srgb, var(--muted) 42%, transparent), color-mix(in srgb, var(--muted) 42%, transparent)) 50% 0 / 1px 100% no-repeat;
+}
+
+.item-axis::before {
   content: "";
-  display: inline-block;
-  width: 6px;
-  height: 6px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
+  background: var(--bg);
+  border: 1.5px solid var(--muted);
+  opacity: 0.55;
+}
+
+.item.unread .item-axis::before {
   background: var(--accent);
-  margin-right: 6px;
-  vertical-align: 2px;
+  border-color: var(--accent);
+  opacity: 1;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.item.read .item-axis::before { opacity: 0.4; }
+
+/* 中间：单行标题，超长省略；hover 时滚动显示全文 */
+.item-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  padding-left: 2px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.item-title-text {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
 }
 
 .item.read .item-title { font-weight: 400; color: var(--muted); }
+.item.headline .item-title { font-size: 14px; font-weight: 700; }
+.item.headline.read .item-title { font-weight: 600; color: var(--muted); }
 
-.item.headline .item-title { font-size: 16px; font-weight: 700; }
-.item.headline.unread .item-title::before { background: var(--accent); }
-
-.item-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 5px;
-  font-size: 12px;
-  color: var(--muted);
+.item-title.marquee .item-title-text {
+  max-width: none;
+  text-overflow: clip;
+  animation: title-scroll var(--scroll-duration, 900ms) linear infinite alternate;
+  animation-delay: 120ms;
 }
 
-.item-time {
-  font-variant-numeric: tabular-nums;
-  color: var(--muted);
-  opacity: 0.85;
+@keyframes title-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(var(--scroll-distance, 0px)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item-title.marquee .item-title-text { animation: none; }
+}
+
+/* 右侧：分类标签 */
+.item-tags {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
 }
 
 .item-tag {
   display: inline-flex;
   align-items: center;
-  padding: 1px 7px;
+  padding: 0 6px;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--tag-color, var(--muted)) 34%, transparent);
   background: color-mix(in srgb, var(--tag-color, var(--muted)) 12%, transparent);
   color: var(--tag-color, var(--muted));
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.03em;
-  line-height: 1.45;
+  letter-spacing: 0.02em;
+  line-height: 16px;
 }
 
 .item-tag.topic { --tag-color: var(--tag-topic); }

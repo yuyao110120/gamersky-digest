@@ -348,21 +348,59 @@ function typeLabel(type) {
   return '';
 }
 
+function attachTitleScroller(itemEl, titleWrap, titleText) {
+  function measureOverflow() {
+    // 默认状态标题被 max-width:100% 裁掉并显示省略号，scrollWidth 等于可见宽度；
+    // 测量时临时放开限制，拿到整段文字的宽度。
+    var previousMaxWidth = titleText.style.maxWidth;
+    titleText.style.maxWidth = 'none';
+    var distance = titleText.scrollWidth - titleWrap.clientWidth;
+    titleText.style.maxWidth = previousMaxWidth;
+    return distance;
+  }
+  itemEl.addEventListener('mouseenter', function () {
+    var distance = measureOverflow();
+    if (distance <= 2) return;
+    titleText.style.setProperty('--scroll-distance', '-' + distance + 'px');
+    titleText.style.setProperty('--scroll-duration', Math.max(900, Math.round(distance * 14)) + 'ms');
+    titleWrap.classList.add('marquee');
+  });
+  itemEl.addEventListener('mouseleave', function () {
+    titleWrap.classList.remove('marquee');
+    titleText.style.removeProperty('--scroll-distance');
+    titleText.style.removeProperty('--scroll-duration');
+  });
+}
+
 function makeItem(item, isRead) {
   var button = document.createElement('button');
   button.type = 'button';
   button.className = 'item' + (isRead ? ' read' : ' unread') + (item.headline ? ' headline' : '');
   button.dataset.url = item.url;
-  button.appendChild(el('div', 'item-title', item.title));
-  var meta = el('div', 'item-meta');
-  var timeText = item.timeText ? fmt.formatListTime(item.timeText) : '';
-  if (timeText) meta.appendChild(el('span', 'item-time', timeText));
+
+  var timeEl = el('span', 'item-time', item.timeText ? fmt.formatCompactTime(item.timeText) : '');
+  if (item.timeText) timeEl.title = item.timeText;
+
+  var axis = el('span', 'item-axis');
+  axis.setAttribute('aria-hidden', 'true');
+
+  var titleWrap = el('span', 'item-title');
+  var titleText = el('span', 'item-title-text', item.title);
+  titleWrap.appendChild(titleText);
+
+  var tags = el('span', 'item-tags');
   var tag = typeLabel(item.type);
   if (tag) {
     var tagType = String(item.type || '').replace(/[^a-z]/g, '') || 'external';
-    meta.appendChild(el('span', 'item-tag ' + tagType, tag));
+    tags.appendChild(el('span', 'item-tag ' + tagType, tag));
   }
-  if (meta.childNodes.length) button.appendChild(meta);
+
+  button.appendChild(timeEl);
+  button.appendChild(axis);
+  button.appendChild(titleWrap);
+  button.appendChild(tags);
+
+  attachTitleScroller(button, titleWrap, titleText);
   button.addEventListener('click', function () {
     openArticle(item);
   });
