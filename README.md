@@ -2,6 +2,11 @@
 
 Chrome 侧边栏扩展：把游民星空（gamersky.com）首页的「今日要闻」搬进侧边栏，点开就能在插件内读正文，不必进站看广告和杂项。
 
+[![GitHub release](https://img.shields.io/github/v/release/yuyao110120/gamersky-digest?label=release)](https://github.com/yuyao110120/gamersky-digest/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+![侧边栏截图](docs/screenshot.png)
+
 ## 功能
 
 - 解析首页「今日要闻」：**6 条头条 + 3 页 × 24 条列表**（站点是服务端一次渲染，插件用「加载更多」逐页展开，不再发请求）
@@ -14,14 +19,20 @@ Chrome 侧边栏扩展：把游民星空（gamersky.com）首页的「今日要�
 - 打开先渲染缓存，超过 10 分钟自动静默刷新；离线可读缓存列表和最近 30 篇文章
 - 深浅色（跟随系统 / 手动）、正文字号三档；快捷键 Alt+G 打开侧边栏
 
-## 安装（解压加载）
+## 下载与安装
 
-1. 打开 `chrome://extensions`
-2. 右上角开启「开发者模式」
-3. 点「加载已解压的扩展程序」，选择本目录（含 `manifest.json` 的目录）
+**方式一：下载 Release（推荐）**
+
+1. 到 [Releases](https://github.com/yuyao110120/gamersky-digest/releases) 下载最新的 `gamersky-digest-v*.zip` 并解压
+2. 打开 `chrome://extensions`，右上角开启「开发者模式」
+3. 点「加载已解压的扩展程序」，选择解压出来的 `gamersky-digest` 目录
 4. 点工具栏的「游民要闻」图标（或按 Alt+G）打开侧边栏；首次打开会自动抓取，等 1–2 秒
 
-要求 **Chrome 114+**（侧边栏 API）。不上架商店，纯个人使用。
+**方式二：使用源码**
+
+`git clone` 后，在 `chrome://extensions` 选择仓库根目录（含 `manifest.json`）加载。
+
+要求 **Chrome 114+**（侧边栏 API）。不上架 Chrome Web Store，纯个人使用。
 
 ## 使用
 
@@ -72,7 +83,7 @@ tools/make-logo.py    从 favicon 生成像素 SVG + PNG 的脚本（纯标准�
 
 - 依赖只为测试：`npm install`（jsdom）
 - 跑测试：`npm test`
-- 解析器 fixture 在 `test/fixtures/`（首页 / 文章 / 多页 / 重定向壳 / JSONP 各一份）。站点改版后，抓一份新页面替换对应 fixture，跑测试即可定位选择器问题
+- 解析器 fixture 在 `test/fixtures/`（首页 / 文章 / 多页 / 重定向壳 / 动图 / 站内链接各一份）。站点改版后，抓一份新页面替换对应 fixture，跑测试即可定位选择器问题
 - 图标：`python3 tools/make-logo.py`（读 `assets/favicon.ico`，生成 `icons/logo.svg` 与各尺寸 PNG，不需要第三方库）
 
 ## 已知限制
@@ -90,6 +101,7 @@ tools/make-logo.py    从 favicon 生成像素 SVG + PNG 的脚本（纯标准�
 - 侧边栏空白/报错：打开 `chrome://extensions` →「游民要闻」→ 点「服务工作进程」看日志；侧边栏内右键「检查」看前端报错
 - 后台解析日志：`chrome://extensions` → 游民要闻 → service worker 的 Console；offscreen 文档也会出现在扩展的检查视图里
 - 清空数据：移除扩展重新加载，或在扩展页面执行 `chrome.storage.local.clear()`
+- 问题反馈：[GitHub Issues](https://github.com/yuyao110120/gamersky-digest/issues)（请附 Chrome 版本、扩展版本、service worker 报错截图）
 
 ## 设计决策（为什么这么做）
 
@@ -100,6 +112,13 @@ tools/make-logo.py    从 favicon 生成像素 SVG + PNG 的脚本（纯标准�
 - **图标来自站点 favicon**：解析游民星空的 16×16 ICO，去掉上世纪的 1px 灰色斜面边框，重绘为纯 `<rect>` 的像素风 SVG（`icons/logo.svg`，任意尺寸都清晰）；Chrome 清单图标不支持 SVG，所以再栅格化为 16/32/48/128 的 PNG
 - **不静默失败**：保留上次数据 + 明确提示，避免「看起来正常其实是空的」
 
+## 开源协议
+
+本项目代码以 [MIT License](LICENSE) 开源。
+
+- 游民星空的内容（新闻、图片、Logo 等）版权归游民星空所有；本项目仅作为**个人阅读用途**的客户端，不缓存分发内容、不用于商业用途。
+- 扩展图标由游民星空 favicon 重绘而来，仅用于识别本工具；如涉版权问题，请在 [Issues](https://github.com/yuyao110120/gamersky-digest/issues) 提出，会立即移除。
+
 ## 版本
 
-0.1.0 — 首个可用版本
+0.1.0 — 首个可用版本（对应 [Release v0.1.0](https://github.com/yuyao110120/gamersky-digest/releases/tag/v0.1.0)）

@@ -3,6 +3,7 @@
   "name": "游民要闻",
   "version": "0.1.0",
   "description": "在 Chrome 侧边栏里读游民星空「今日要闻」，不必进站。",
+  "homepage_url": "https://github.com/yuyao110120/gamersky-digest",
   "minimum_chrome_version": "114",
   "permissions": ["sidePanel", "alarms", "storage", "offscreen"],
   "host_permissions": [

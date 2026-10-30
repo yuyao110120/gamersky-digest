@@ -4,6 +4,12 @@
   "version": "0.1.0",
   "type": "module",
   "description": "游民要闻 — Chrome 侧边栏扩展，读 gamersky 今日要闻",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuyao110120/gamersky-digest.git"
+  },
+  "homepage": "https://github.com/yuyao110120/gamersky-digest",
   "scripts": {
     "test": "node --test test/*.test.js"
   },
