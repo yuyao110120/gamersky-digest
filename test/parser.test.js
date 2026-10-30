@@ -155,6 +155,26 @@ test('parseArticlePage：hardware 频道同模板，editor 不带 loading 尾巴
   assert.ok(art.blocks.length >= 2);
 });
 
+test('parseArticlePage：游民圈子社区帖可内嵌解析', () => {
+  const art = parseArticlePage(
+    fixture('article-club.html'),
+    'https://club.gamersky.com/activity/1608449?club=211'
+  );
+  assert.equal(art.kind, 'article');
+  assert.match(art.title, /工具站上线/);
+  assert.equal(art.meta.source, '游民圈子');
+  assert.equal(art.meta.author, 'Wishing028');
+  assert.equal(art.meta.timeText, '2026-10-29 18:41');
+
+  const texts = art.blocks.filter((block) => block.type === 'text');
+  assert.ok(texts.length >= 5, '社区帖正文段落至少 5 段，实际 ' + texts.length);
+  const images = art.blocks.filter((block) => block.type === 'image');
+  assert.ok(images.length >= 5, '社区帖图片至少 5 张，实际 ' + images.length);
+  assert.ok(images.every((block) => /^https:\/\//.test(block.src)));
+  assert.equal(images.filter((block) => /blank\.(png|gif)|loading\./i.test(block.src)).length, 0);
+  assert.equal(art.pageUrls.length, 0);
+});
+
 test('parseArticlePage：JS 重定向壳页被识别为 redirect', () => {
   const art = parseArticlePage(
     fixture('redirect-shell.html'),

@@ -492,6 +492,14 @@ async function markReadUrl(url) {
 }
 
 async function openArticle(item) {
+  // 专题/活动页是前端渲染的聚合页，插件内无法阅读：点击标题直接在新标签页打开原站
+  if (item.type === 'topic' || item.type === 'external') {
+    markReadUrl(item.url);
+    renderList();
+    openExternal(item.url);
+    showToast('已在新标签页打开原文');
+    return;
+  }
   state.listScroll = els.list.scrollTop;
   state.articleItem = item;
   state.articleUrl = item.url;
@@ -506,7 +514,8 @@ async function openArticle(item) {
 }
 
 async function loadArticle(item) {
-  if (item.type && item.type !== 'article') {
+  var readable = item.type === 'article' || item.type === 'community';
+  if (!readable) {
     state.articleLoading = false;
     state.articleNotice = {
       title: '该条内容无法在插件内阅读',

@@ -14,7 +14,7 @@ Chrome 侧边栏扩展：把游民星空（gamersky.com）首页的「今日要�
 - 「头条 / 今日要闻」分组标题滚动时**吸顶**，随时知道当前在看哪一组；不显示摘要，保持列表清爽
 - 头条分组置顶、已读/未读、上次查看后的新条目分隔线
 - 文章视图：标题、完整时间、来源、作者、正文；站内链接可点；图片默认占位、点击加载；视频显示外链入口；多页文章自动合并前 5 页
-- 专题聚合页 / 社区帖 / JS 重定向壳页：提示 + 打开原文（这些不是文章模板）
+- 专题/活动页（`/zt/`、`/zhuanti/`，前端渲染）：点击标题**直接在新标签页打开原站**（保留 topicId 等参数）；游民圈子社区帖（`club.gamersky.com`）可直接内嵌阅读；JS 重定向壳页会提示并给原文入口
 - 30 分钟后台刷新 + 图标 badge 显示新增条数；打开侧边栏清零
 - 打开先渲染缓存，超过 10 分钟自动静默刷新；离线可读缓存列表和最近 30 篇文章
 - 深浅色（跟随系统 / 手动）、正文字号三档；快捷键 Alt+G 打开侧边栏
@@ -46,7 +46,7 @@ Chrome 侧边栏扩展：把游民星空（gamersky.com）首页的「今日要�
 ## 数据来源与抓取
 
 - 列表：`https://www.gamersky.com/` 首页「今日要闻」模块（服务端渲染，HTML 里就有全部 3 页数据）
-- 文章：直接请求文章页 HTML（/news/ 与 /hardware/ 等 CMS 频道同模板）
+- 文章：直接请求文章页 HTML（/news/、/hardware/ 等 CMS 频道同模板；`club.gamersky.com` 社区帖单独适配 `.qzcmt-content` 结构）
 - 全部请求由扩展自己发起（host_permissions），**不经过任何第三方服务器，不上传数据，不读 Cookie，不注入站点页面**
 - 抓取频率：后台每 30 分钟一次；打开面板时若距上次成功超过 10 分钟再补一次；失败后 60 秒内重试一次
 - 未使用：RSS（站点没有可用 RSS）、登录态、执行站点 JS
@@ -60,7 +60,7 @@ Chrome 侧边栏扩展：把游民星空（gamersky.com）首页的「今日要�
 | `storage` | 本地缓存列表 / 已读 / 文章（约几百 KB） |
 | `offscreen` | Service Worker 里没有 DOMParser，后台解析放在不可见的 offscreen 文档里 |
 
-`host_permissions`：`https://www.gamersky.com/*`（请求首页列表与文章页）。
+`host_permissions`：`https://www.gamersky.com/*`、`https://club.gamersky.com/*`（请求首页列表、文章页与社区帖）。
 
 ## 目录结构
 
@@ -89,7 +89,7 @@ tools/make-logo.py    从 favicon 生成像素 SVG + PNG 的脚本（纯标准�
 ## 已知限制
 
 - 只做游民星空，不做其它站点
-- 专题聚合页（`/zt/`，Nuxt SPA）和社区帖（`club.gamersky.com`）无法内嵌阅读，只能打开原文
+- 专题/活动页（`/zt/`、`/zhuanti/`，前端渲染）无法内嵌阅读，点击标题会直接打开原站；社区帖已支持内嵌阅读
 - 部分条目是 JS 重定向壳页（如跳专题），阅读视图会提示
 - 多页文章最多合并前 5 页，剩余给「打开原文」
 - 图片默认不加载（省流量），点击才加载；动图取站点原图（会动，但通常较大，个别 5MB+）
@@ -120,5 +120,7 @@ tools/make-logo.py    从 favicon 生成像素 SVG + PNG 的脚本（纯标准�
 - 扩展图标由游民星空 favicon 重绘而来，仅用于识别本工具；如涉版权问题，请在 [Issues](https://github.com/yuyao110120/gamersky-digest/issues) 提出，会立即移除。
 
 ## 版本
+
+0.2.0 — 专题条目改为点击直接打开原站；支持游民圈子社区帖内嵌阅读
 
 0.1.0 — 首个可用版本（对应 [Release v0.1.0](https://github.com/yuyao110120/gamersky-digest/releases/tag/v0.1.0)）
