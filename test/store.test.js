@@ -10,21 +10,20 @@ import {
   ARTICLE_MAX_ENTRIES,
 } from '../lib/store.js';
 
-test('mergeItems：保留 firstSeenAt 与摘要，新条目记 now', () => {
+test('mergeItems：保留 firstSeenAt，新条目记 now', () => {
   const existing = [
-    { url: 'a', title: '旧标题', summary: '旧摘要', firstSeenAt: 1000, page: 1 },
+    { url: 'a', title: '旧标题', firstSeenAt: 1000, page: 1 },
   ];
   const incoming = [
-    { url: 'a', title: '新标题', summary: '', headline: false, page: 1, order: 1, type: 'article' },
-    { url: 'b', title: 'B', summary: '站点摘要', headline: true, page: 0, order: 2, type: 'article' },
+    { url: 'a', title: '新标题', headline: false, page: 1, order: 1, type: 'article' },
+    { url: 'b', title: 'B', headline: true, page: 0, order: 2, type: 'article' },
   ];
   const merged = mergeItems(existing, incoming, 5000);
   assert.equal(merged.length, 2);
   assert.equal(merged[0].title, '新标题');
-  assert.equal(merged[0].summary, '旧摘要');
   assert.equal(merged[0].firstSeenAt, 1000);
   assert.equal(merged[1].firstSeenAt, 5000);
-  assert.equal(merged[1].summary, '站点摘要');
+  assert.equal('summary' in merged[0], false);
 });
 
 test('countNewSinceLastSeen：只数 lastSeenAt 之后首次出现的条目', () => {

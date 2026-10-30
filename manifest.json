@@ -6,8 +6,7 @@
   "minimum_chrome_version": "114",
   "permissions": ["sidePanel", "alarms", "storage", "offscreen"],
   "host_permissions": [
-    "https://www.gamersky.com/*",
-    "https://db2.gamersky.com/*"
+    "https://www.gamersky.com/*"
   ],
   "background": {
     "service_worker": "background.js",

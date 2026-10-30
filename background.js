@@ -1,5 +1,5 @@
 // background.js — 定时抓取、后台解析编排、badge、消息入口
-import { fetchHomeHtml, fetchNewsEnrichment } from './lib/fetcher.js';
+import { fetchHomeHtml } from './lib/fetcher.js';
 import * as store from './lib/store.js';
 
 const REFRESH_ALARM = 'gamersky-refresh';
@@ -98,14 +98,8 @@ async function doRefresh(reason) {
   } catch (err) { /* 忽略 */ }
 
   try {
-    var results = await Promise.all([
-      fetchHomeHtml(),
-      fetchNewsEnrichment().catch(function () { return null; }),
-    ]);
-    var homeHtml = results[0];
-    var newsText = results[1];
-
-    var items = await parseInOffscreen(homeHtml, newsText);
+    var homeHtml = await fetchHomeHtml();
+    var items = await parseInOffscreen(homeHtml);
     var now = Date.now();
     var applyResult = await store.applyFetch(items, now);
     var meta = await store.patchMeta({
@@ -151,13 +145,12 @@ async function doRefresh(reason) {
   }
 }
 
-async function parseInOffscreen(homeHtml, newsText) {
+async function parseInOffscreen(homeHtml) {
   await ensureOffscreen();
   var response = await chrome.runtime.sendMessage({
     target: 'offscreen',
     type: 'parse-home',
     homeHtml: homeHtml,
-    newsText: newsText || '',
   });
   if (!response || !response.ok) {
     var message = response && response.error ? response.error : '页面解析失败';

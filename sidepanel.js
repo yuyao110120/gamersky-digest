@@ -326,8 +326,8 @@ function renderBanner() {
   }
 }
 
-function makeSectionLabel(text) {
-  return el('div', 'section-label', text);
+function makeSectionLabel(text, isHeadline) {
+  return el('div', 'section-label' + (isHeadline ? ' headline' : ''), text);
 }
 
 function makeDivider(text) {
@@ -363,7 +363,6 @@ function makeItem(item, isRead) {
     meta.appendChild(el('span', 'item-tag ' + tagType, tag));
   }
   if (meta.childNodes.length) button.appendChild(meta);
-  if (item.summary) button.appendChild(el('div', 'item-summary', item.summary));
   button.addEventListener('click', function () {
     openArticle(item);
   });
@@ -416,11 +415,11 @@ function renderList() {
       dividerPlaced = true;
     }
     if (item.headline && !headlineLabelShown) {
-      list.appendChild(makeSectionLabel('头条'));
+      list.appendChild(makeSectionLabel('头条', true));
       headlineLabelShown = true;
     }
     if (!item.headline && !listLabelShown) {
-      if (headlineLabelShown) list.appendChild(makeSectionLabel('今日要闻'));
+      if (headlineLabelShown) list.appendChild(makeSectionLabel('今日要闻', false));
       listLabelShown = true;
     }
     list.appendChild(makeItem(item, !!state.read[item.url]));

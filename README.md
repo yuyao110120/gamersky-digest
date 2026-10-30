@@ -5,7 +5,7 @@ Chrome 侧边栏扩展：把游民星空（gamersky.com）首页的「今日要�
 ## 功能
 
 - 解析首页「今日要闻」：**6 条头条 + 3 页 × 24 条列表**（站点是服务端一次渲染，插件用「加载更多」逐页展开，不再发请求）
-- 列表显示标题 / 时间（当天显示 x 小时前，更早显示 `MM-DD`）/ 摘要（来自 /news/「今日推荐」流，按 URL 匹配，匹配不到就不显示）
+- 列表显示标题 / 时间（当天显示 x 小时前，更早显示 `MM-DD`）/ 分类标签；不显示摘要，保持列表清爽
 - 头条分组置顶、已读/未读、上次查看后的新条目分隔线
 - 文章视图：标题、完整时间、来源、作者、正文；站内链接可点；图片默认占位、点击加载；视频显示外链入口；多页文章自动合并前 5 页
 - 专题聚合页 / 社区帖 / JS 重定向壳页：提示 + 打开原文（这些不是文章模板）
@@ -34,7 +34,6 @@ Chrome 侧边栏扩展：把游民星空（gamersky.com）首页的「今日要�
 ## 数据来源与抓取
 
 - 列表：`https://www.gamersky.com/` 首页「今日要闻」模块（服务端渲染，HTML 里就有全部 3 页数据）
-- 摘要富化：`https://db2.gamersky.com/LabelJsonpAjax.aspx`（nodeId=11007，即 /news/「今日推荐」第一页 50 条）
 - 文章：直接请求文章页 HTML（/news/ 与 /hardware/ 等 CMS 频道同模板）
 - 全部请求由扩展自己发起（host_permissions），**不经过任何第三方服务器，不上传数据，不读 Cookie，不注入站点页面**
 - 抓取频率：后台每 30 分钟一次；打开面板时若距上次成功超过 10 分钟再补一次；失败后 60 秒内重试一次
@@ -49,7 +48,7 @@ Chrome 侧边栏扩展：把游民星空（gamersky.com）首页的「今日要�
 | `storage` | 本地缓存列表 / 已读 / 文章（约几百 KB） |
 | `offscreen` | Service Worker 里没有 DOMParser，后台解析放在不可见的 offscreen 文档里 |
 
-`host_permissions`：`https://www.gamersky.com/*`、`https://db2.gamersky.com/*`（请求列表页、文章页、摘要接口）。
+`host_permissions`：`https://www.gamersky.com/*`（请求首页列表与文章页）。
 
 ## 目录结构
 
@@ -58,8 +57,8 @@ manifest.json          MV3 清单
 background.js         定时抓取 / offscreen 编排 / badge / 消息
 offscreen.html|js     后台 DOMParser 宿主
 sidepanel.html|css|js 侧边栏（列表 + 文章两视图）
-lib/parser.js         纯函数解析器（首页 / 文章 / JSONP 富化）
-lib/fetcher.js        网络请求（超时、JSONP 拼装）
+lib/parser.js         纯函数解析器（首页 / 文章）
+lib/fetcher.js        网络请求（超时、失败分类）
 lib/store.js          chrome.storage 读写 + 纯合并/裁剪函数
 lib/format.js         时间与文案格式化
 icons/                占位图标（tools/make-icons.py 生成）
@@ -79,7 +78,6 @@ tools/make-icons.py   图标生成脚本（纯标准库）
 - 只做游民星空，不做其它站点
 - 专题聚合页（`/zt/`，Nuxt SPA）和社区帖（`club.gamersky.com`）无法内嵌阅读，只能打开原文
 - 部分条目是 JS 重定向壳页（如跳专题），阅读视图会提示
-- 摘要依赖 /news/ 第一页 50 条：最多覆盖 50 条条目，其余只显示标题；接口变动时自动降级为无摘要
 - 多页文章最多合并前 5 页，剩余给「打开原文」
 - 图片默认不加载（省流量），点击才加载；动图取站点原图（会动，但通常较大，个别 5MB+）
 - 时间按站点北京时间显示；跨时区时以文章页完整时间为准

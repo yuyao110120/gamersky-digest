@@ -6,7 +6,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   parseHomePage,
-  parseNewsJsonp,
   parseArticlePage,
   canonicalizeUrl,
   classifyUrl,
@@ -50,24 +49,9 @@ test('parseHomePage：77 条（6 头条 + 71 列表）、3 页、去重、URL �
   assert.match(topic.url, /\/zt\/assemble\/hottopic/);
   const communities = home.items.filter((item) => item.type === 'community');
   assert.ok(communities.every((item) => item.url.startsWith('https://club.gamersky.com/')));
-});
 
-test('parseNewsJsonp：剥 JSONP 壳、50 条、摘要与完整时间', () => {
-  const map = parseNewsJsonp(fixture('news-enrich.jsonp.txt'));
-  const keys = Object.keys(map);
-  assert.equal(keys.length, 50);
-  assert.ok(keys.includes('https://www.gamersky.com/news/202610/2237595.shtml'));
-  const item = map['https://www.gamersky.com/news/202610/2237595.shtml'];
-  assert.ok(item.summary.length > 10);
-  assert.match(item.timeText, /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
-});
-
-test('首页条目可与 /news/ 富化结果按 URL 匹配', () => {
-  const home = parseHomePage(fixture('home.html'));
-  const enrich = parseNewsJsonp(fixture('news-enrich.jsonp.txt'));
-  const matched = home.items.filter((item) => enrich[item.url]);
-  assert.ok(matched.length >= 20, '至少应有 20 条能补上摘要，实际 ' + matched.length);
-  assert.ok(matched.some((item) => enrich[item.url].summary.length > 10));
+  // 列表不再带摘要，保持清爽
+  assert.ok(home.items.every((item) => !item.summary), '首页条目不应带 summary 字段');
 });
 
 test('parseArticlePage：标题 / 元信息 / 正文 / 图片 / 视频', () => {
