@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" />
+    <title>《影之刃》首日在线72万！今日游民最热新闻大汇总 _ 游民星空 GamerSky.com</title>
+    <script src="//j.gamersky.com/g/jquery-1.8.3.js"></script>
+</head>
+<body>
+    <div id="redirectTips" data-itemid="2237544" data-link='https://www.gamersky.com/zt/assemble/hottopic/?topicId=626&amp;gsAppPageName=NewsRecommendTopic&amp;appNavigationBarStyle=kNoneBar'></div>
+    <script>
+        (function ($) {
+            $.fn.ContentHit = function (options) {
+                return this.each(function () {
+                    var $this = $(this);
+                    $.ajax({
+                        type: "GET",dataType: "jsonp",url: "https://click.gamersky.com/Common/GetHits.aspx",
+                        data: {id: $this.attr("data-itemid"),script: "3"},
+						error: function(){
+                            window.location.href = $this.attr("data-link");
+                        },
+                        success: function (data) {
+                            window.location.href = $this.attr("data-link");
+                        },
+						timeout: 2000
+                    });
+                });
+            };
+            $("#redirectTips").ContentHit();
+        })(jQuery);
+    </script>
+</body>
+</html><!-- ParserInfo: Processed in 0.0382521 second(s) Ticks:93389 -->

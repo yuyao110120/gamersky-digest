@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "游民要闻",
+  "version": "0.1.0",
+  "description": "在 Chrome 侧边栏里读游民星空「今日要闻」，不必进站。",
+  "minimum_chrome_version": "114",
+  "permissions": ["sidePanel", "alarms", "storage", "offscreen"],
+  "host_permissions": [
+    "https://www.gamersky.com/*",
+    "https://db2.gamersky.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "action": {
+    "default_title": "游民要闻"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": { "default": "Alt+G" },
+      "description": "打开游民要闻侧边栏"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}

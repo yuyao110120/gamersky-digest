@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="auto" data-size="m">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>游民要闻</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <div id="app">
+    <header class="toolbar">
+      <div class="toolbar-top">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span class="brand-name">游民要闻</span>
+          <span class="brand-date" id="today"></span>
+        </div>
+        <div class="toolbar-actions">
+          <button id="btn-refresh" class="icon-btn" type="button" title="立即刷新" aria-label="立即刷新">⟳</button>
+          <button id="btn-menu" class="icon-btn" type="button" title="更多" aria-label="更多">⋯</button>
+        </div>
+      </div>
+      <div class="statusline" id="statusline"></div>
+    </header>
+
+    <div class="banner" id="banner" hidden></div>
+
+    <div class="update-bar" id="update-bar" hidden>
+      <button id="btn-update" type="button">有 <span id="update-count">0</span> 条更新 · 点击刷新</button>
+    </div>
+
+    <main id="view-list" class="view">
+      <div id="list" class="list"></div>
+      <div id="list-footer" class="list-footer"></div>
+    </main>
+
+    <main id="view-article" class="view" hidden>
+      <div class="article-toolbar">
+        <button id="btn-back" class="text-btn" type="button">‹ 返回</button>
+        <button id="btn-original" class="text-btn" type="button">原文 ↗</button>
+      </div>
+      <div id="article" class="article"></div>
+    </main>
+
+    <div id="menu" class="menu" hidden>
+      <div class="menu-section">
+        <div class="menu-title">主题</div>
+        <div class="seg" id="seg-theme">
+          <button type="button" data-theme="auto">自动</button>
+          <button type="button" data-theme="light">浅色</button>
+          <button type="button" data-theme="dark">深色</button>
+        </div>
+      </div>
+      <div class="menu-section">
+        <div class="menu-title">正文字号</div>
+        <div class="seg" id="seg-font">
+          <button type="button" data-size="s">小</button>
+          <button type="button" data-size="m">中</button>
+          <button type="button" data-size="l">大</button>
+        </div>
+      </div>
+      <div class="menu-section">
+        <button class="menu-item" id="btn-mark-all" type="button">全部标为已读</button>
+        <button class="menu-item" id="btn-open-site" type="button">打开游民星空 ↗</button>
+      </div>
+      <div class="menu-foot">v0.1.0 · 数据来自 gamersky.com</div>
+    </div>
+
+    <div id="toast" class="toast" hidden></div>
+  </div>
+  <script type="module" src="sidepanel.js"></script>
+</body>
+</html>

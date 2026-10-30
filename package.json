@@ -1,0 +1,13 @@
+{
+  "name": "gamersky-digest",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "游民要闻 — Chrome 侧边栏扩展，读 gamersky 今日要闻",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.1"
+  }
+}
