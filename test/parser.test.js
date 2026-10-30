@@ -126,6 +126,39 @@ test('parseArticlePage：多页文章返回后续页 URL', () => {
   assert.equal(art.pageUrls[9].page, 11);
 });
 
+test('parseArticlePage：懒加载动图解析出真实 gif 地址（不是 blank.png 占位）', () => {
+  const art = parseArticlePage(
+    fixture('article-gif.html'),
+    'https://www.gamersky.com/news/202610/2237541.shtml'
+  );
+  const images = art.blocks.filter((block) => block.type === 'image');
+  assert.ok(images.length >= 3);
+
+  const gifs = images.filter((block) => /\.gif(\?|$)/i.test(block.src));
+  assert.ok(gifs.length >= 2, '至少应有 2 张动图，实际 ' + gifs.length);
+  assert.ok(gifs.every((block) => block.animated === true));
+  // 必须取 data-origin（真正会动的原图），不能取 data-src 的静态预览帧
+  assert.ok(
+    gifs.some((block) => /\/origin_/.test(block.src)),
+    '动图应优先使用 data-origin，实际：' + gifs.map((block) => block.src).join(', ')
+  );
+
+  // 占位图不能混进正文，且同一张图不能重复
+  assert.equal(images.filter((block) => /blank\.(png|gif)|loading\.(gif|png)/i.test(block.src)).length, 0);
+  const srcs = images.map((block) => block.src);
+  assert.equal(new Set(srcs).size, srcs.length);
+});
+
+test('parseArticlePage：直接外链的 gif 也能识别为动图', () => {
+  const art = parseArticlePage(
+    fixture('article-gif-direct.html'),
+    'https://www.gamersky.com/news/202610/2236949.shtml'
+  );
+  const gifs = art.blocks.filter((block) => block.type === 'image' && /\.gif(\?|$)/i.test(block.src));
+  assert.ok(gifs.length >= 2);
+  assert.ok(gifs.every((block) => block.animated === true));
+});
+
 test('parseArticlePage：hardware 频道同模板，editor 不带 loading 尾巴', () => {
   const art = parseArticlePage(
     fixture('article-hardware.html'),

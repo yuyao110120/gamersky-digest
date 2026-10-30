@@ -16,6 +16,9 @@
   --error-text: #8a2020;
   --shadow: 0 10px 30px rgba(20, 20, 20, 0.14);
   --article-size: 16px;
+  --tag-topic: #c2410c;
+  --tag-community: #0f766e;
+  --tag-external: #6b7280;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -36,10 +39,16 @@
     --error-border: #7a3a38;
     --error-text: #f0a9a5;
     --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    --tag-topic: #ff9a5c;
+    --tag-community: #5eead4;
+    --tag-external: #9aa1a9;
   }
 }
 
 :root[data-theme="dark"] {
+  --tag-topic: #ff9a5c;
+  --tag-community: #5eead4;
+  --tag-external: #9aa1a9;
   --bg: #17191d;
   --surface: #1f2227;
   --surface-2: #24282e;
@@ -63,6 +72,10 @@
 :root[data-size="l"] { --article-size: 18px; }
 
 * { box-sizing: border-box; }
+
+/* .view / .banner 显式设置了 display，会覆盖 UA 的 [hidden]{display:none}。
+   这里统一兜底，保证 hidden 在任何元素上都生效。 */
+[hidden] { display: none !important; }
 
 html, body {
   margin: 0;
@@ -288,18 +301,34 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 4px;
+  margin-top: 5px;
   font-size: 12px;
   color: var(--muted);
 }
 
-.item-tag {
-  padding: 0 5px;
-  border-radius: 4px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: 11px;
+.item-time {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  opacity: 0.85;
 }
+
+.item-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--tag-color, var(--muted)) 34%, transparent);
+  background: color-mix(in srgb, var(--tag-color, var(--muted)) 12%, transparent);
+  color: var(--tag-color, var(--muted));
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.45;
+}
+
+.item-tag.topic { --tag-color: var(--tag-topic); }
+.item-tag.community { --tag-color: var(--tag-community); }
+.item-tag.external { --tag-color: var(--tag-external); }
 
 .item-summary {
   margin-top: 4px;

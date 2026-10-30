@@ -3,3 +3,5 @@ node_modules/
 .chrome-test/
 .npm-cache/
 *.log
+
+screenshots/

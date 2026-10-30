@@ -355,11 +355,14 @@ function makeItem(item, isRead) {
   button.dataset.url = item.url;
   button.appendChild(el('div', 'item-title', item.title));
   var meta = el('div', 'item-meta');
-  var timeText = item.timeText ? fmt.formatListTime(item.timeText) : (item.headline ? '头条' : '');
+  var timeText = item.timeText ? fmt.formatListTime(item.timeText) : '';
   if (timeText) meta.appendChild(el('span', 'item-time', timeText));
   var tag = typeLabel(item.type);
-  if (tag) meta.appendChild(el('span', 'item-tag', tag));
-  button.appendChild(meta);
+  if (tag) {
+    var tagType = String(item.type || '').replace(/[^a-z]/g, '') || 'external';
+    meta.appendChild(el('span', 'item-tag ' + tagType, tag));
+  }
+  if (meta.childNodes.length) button.appendChild(meta);
   if (item.summary) button.appendChild(el('div', 'item-summary', item.summary));
   button.addEventListener('click', function () {
     openArticle(item);
@@ -631,7 +634,7 @@ function renderBlock(container, block) {
   }
   if (block.type === 'image') {
     var slot = el('div', 'image-slot');
-    var placeholder = el('button', 'image-placeholder', '图片 · 点击加载');
+    var placeholder = el('button', 'image-placeholder', (block.animated ? '动图' : '图片') + ' · 点击加载');
     placeholder.type = 'button';
     placeholder.title = block.alt || '点击加载图片';
     placeholder.addEventListener('click', function () {
