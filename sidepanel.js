@@ -5,6 +5,7 @@ import { parseArticlePage } from './lib/parser.js';
 import { fetchArticleHtml } from './lib/fetcher.js';
 
 var PAGE_BATCH_SIZE = 5;
+var articleCacheTimer = 0;
 var SITE_URL = 'https://www.gamersky.com/';
 
 var state = {
@@ -614,7 +615,9 @@ async function loadPageBatch(article, count) {
   if (remaining <= 0) return;
   article.loadingMore = true;
   article.loadMoreError = '';
+  var scrollTop = els.article.scrollTop;
   renderArticle();
+  els.article.scrollTop = scrollTop;
   var goal = Math.min(count, remaining);
   for (var i = 0; i < goal; i++) {
     var page = article.allPages[article.nextIndex];
@@ -630,6 +633,7 @@ async function loadPageBatch(article, count) {
   }
   article.loadingMore = false;
   renderArticle();
+  els.article.scrollTop = scrollTop;
   if (state.articleItem) {
     try {
       await store.cacheArticle(state.articleItem.url, serializeArticle(article), Date.now());
@@ -739,32 +743,7 @@ function renderBlock(container, block) {
     return;
   }
   if (block.type === 'image') {
-    var slot = el('div', 'image-slot');
-    var placeholder = el('button', 'image-placeholder', (block.animated ? '动图' : '图片') + ' · 点击加载');
-    placeholder.type = 'button';
-    placeholder.title = block.alt || '点击加载图片';
-    placeholder.addEventListener('click', function () {
-      var img = document.createElement('img');
-      img.className = 'article-image';
-      img.alt = block.alt || '';
-      img.loading = 'lazy';
-      img.src = block.src;
-      img.addEventListener('error', function () {
-        placeholder.textContent = '图片加载失败';
-      });
-      if (block.link) {
-        var anchor = document.createElement('a');
-        anchor.href = block.link;
-        anchor.target = '_blank';
-        anchor.rel = 'noreferrer';
-        anchor.appendChild(img);
-        slot.replaceChild(anchor, placeholder);
-      } else {
-        slot.replaceChild(img, placeholder);
-      }
-    });
-    slot.appendChild(placeholder);
-    container.appendChild(slot);
+    renderImageBlock(container, block);
     return;
   }
   if (block.type === 'video') {
@@ -774,6 +753,68 @@ function renderBlock(container, block) {
     videoLink.rel = 'noreferrer';
     container.appendChild(videoLink);
   }
+}
+
+function buildArticleImage(block, onError) {
+  var img = document.createElement('img');
+  img.className = 'article-image';
+  img.alt = block.alt || '';
+  img.loading = 'lazy';
+  img.src = block.src;
+  img.addEventListener('error', function () {
+    if (onError) onError();
+  });
+  if (block.link) {
+    var anchor = document.createElement('a');
+    anchor.href = block.link;
+    anchor.target = '_blank';
+    anchor.rel = 'noreferrer';
+    anchor.appendChild(img);
+    return anchor;
+  }
+  return img;
+}
+
+function scheduleArticleCacheSave() {
+  if (articleCacheTimer) clearTimeout(articleCacheTimer);
+  articleCacheTimer = setTimeout(function () {
+    articleCacheTimer = 0;
+    if (!state.articleItem || !state.article) return;
+    try {
+      store.cacheArticle(state.articleItem.url, serializeArticle(state.article), Date.now());
+    } catch (err) { /* 忽略 */ }
+  }, 400);
+}
+
+function renderImageBlock(container, block) {
+  var slot = el('div', 'image-slot');
+
+  function showPlaceholder(text) {
+    slot.textContent = '';
+    var button = el('button', 'image-placeholder', text);
+    button.type = 'button';
+    button.title = block.alt || '点击加载图片';
+    button.addEventListener('click', load);
+    slot.appendChild(button);
+  }
+
+  function load() {
+    // 记在 block 上：加载更多分页触发重新渲染时，已展开的图片保持展开
+    block.loaded = true;
+    var node = buildArticleImage(block, function () {
+      block.loaded = false;
+      showPlaceholder('图片加载失败 · 点击重试');
+      scheduleArticleCacheSave();
+    });
+    slot.textContent = '';
+    slot.appendChild(node);
+    scheduleArticleCacheSave();
+  }
+
+  if (block.loaded) load();
+  else showPlaceholder((block.animated ? '动图' : '图片') + ' · 点击加载');
+
+  container.appendChild(slot);
 }
 
 function renderNotice(notice) {
