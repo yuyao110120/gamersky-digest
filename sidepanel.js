@@ -6,6 +6,14 @@ import { fetchArticleHtml } from './lib/fetcher.js';
 
 var PAGE_BATCH_SIZE = 5;
 var articleCacheTimer = 0;
+
+// 文章页两指右滑返回
+var SWIPE_BACK_THRESHOLD = 120;      // 触控板横向累计量阈值
+var SWIPE_BACK_SIGN = -1;            // 自然滚动下右滑的 deltaX 为负；若方向相反可改为 1
+var SWIPE_TOUCH_THRESHOLD = 80;      // 触屏横向位移阈值（px）
+var SWIPE_BACK_COOLDOWN = 700;       // 两次手势之间的最小间隔（ms）
+
+var swipeState = { wheelX: 0, wheelAt: 0, touch: null, lastBackAt: 0 };
 var SITE_URL = 'https://www.gamersky.com/';
 
 var state = {
@@ -140,6 +148,11 @@ function bindEvents() {
   });
   els.btnUpdate.addEventListener('click', onUpdateClick);
   els.btnBack.addEventListener('click', goBack);
+  // 文章页：触控板/触屏两指右滑返回列表
+  els.viewArticle.addEventListener('wheel', onArticleWheel, { passive: true });
+  els.viewArticle.addEventListener('touchstart', onArticleTouchStart, { passive: true });
+  els.viewArticle.addEventListener('touchmove', onArticleTouchMove, { passive: false });
+  els.viewArticle.addEventListener('touchend', onArticleTouchEnd, { passive: true });
   els.btnOriginal.addEventListener('click', function () {
     if (state.articleItem) openExternal(state.articleItem.url);
   });
@@ -829,6 +842,74 @@ function renderNotice(notice) {
   actions.appendChild(link);
   box.appendChild(actions);
   return box;
+}
+
+function triggerSwipeBack() {
+  if (state.view !== 'article') return;
+  var now = Date.now();
+  if (now - swipeState.lastBackAt < SWIPE_BACK_COOLDOWN) return;
+  swipeState.lastBackAt = now;
+  goBack();
+}
+
+function onArticleWheel(event) {
+  if (state.view !== 'article') return;
+  var absX = Math.abs(event.deltaX);
+  var absY = Math.abs(event.deltaY);
+  // 只处理横向主导的滑动，避免影响正常纵向滚动
+  if (absX < 4 || absX < absY * 1.2) {
+    swipeState.wheelX = 0;
+    return;
+  }
+  var now = Date.now();
+  if (now - swipeState.wheelAt > 320) swipeState.wheelX = 0;
+  swipeState.wheelAt = now;
+  swipeState.wheelX += event.deltaX;
+  if (swipeState.wheelX * SWIPE_BACK_SIGN >= SWIPE_BACK_THRESHOLD) {
+    swipeState.wheelX = 0;
+    triggerSwipeBack();
+  } else if (Math.abs(swipeState.wheelX) > SWIPE_BACK_THRESHOLD * 2) {
+    swipeState.wheelX = 0;
+  }
+}
+
+function onArticleTouchStart(event) {
+  if (state.view !== 'article' || event.touches.length !== 2) {
+    swipeState.touch = null;
+    return;
+  }
+  swipeState.touch = {
+    x: (event.touches[0].clientX + event.touches[1].clientX) / 2,
+    y: (event.touches[0].clientY + event.touches[1].clientY) / 2,
+    lastX: 0,
+    lastY: 0,
+    at: Date.now(),
+  };
+}
+
+function onArticleTouchMove(event) {
+  var touch = swipeState.touch;
+  if (!touch || event.touches.length !== 2) return;
+  var x = (event.touches[0].clientX + event.touches[1].clientX) / 2;
+  var y = (event.touches[0].clientY + event.touches[1].clientY) / 2;
+  touch.lastX = x - touch.x;
+  touch.lastY = y - touch.y;
+  if (Math.abs(touch.lastX) > Math.abs(touch.lastY) * 1.2 && Math.abs(touch.lastX) > 10) {
+    if (event.cancelable) event.preventDefault();
+  }
+}
+
+function onArticleTouchEnd() {
+  var touch = swipeState.touch;
+  swipeState.touch = null;
+  if (!touch) return;
+  var dx = touch.lastX;
+  var dy = touch.lastY;
+  var duration = Date.now() - touch.at;
+  var verticalLimit = Math.max(60, Math.abs(dx) * 0.6);
+  if (dx >= SWIPE_TOUCH_THRESHOLD && Math.abs(dy) <= verticalLimit && duration < 900) {
+    triggerSwipeBack();
+  }
 }
 
 function goBack() {
