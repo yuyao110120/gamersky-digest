@@ -1,132 +1,135 @@
 # 游民要闻（Gamersky Digest）
 
-Chrome 侧边栏扩展：把游民星空（gamersky.com）首页的「今日要闻」搬进侧边栏，点开就能在插件内读正文，不必进站看广告和杂项。
+[![Release](https://img.shields.io/github/v/release/yuyao110120/gamersky-digest)](https://github.com/yuyao110120/gamersky-digest/releases)
+[![License](https://img.shields.io/github/license/yuyao110120/gamersky-digest)](LICENSE)
 
-[![GitHub release](https://img.shields.io/github/v/release/yuyao110120/gamersky-digest?label=release)](https://github.com/yuyao110120/gamersky-digest/releases)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+游民要闻是一个 Chrome 侧边栏扩展，用于在浏览器侧边栏中浏览游民星空（gamersky.com）首页的「今日要闻」，并可直接阅读资讯正文与社区帖子，无需进入站点页面。
 
-![侧边栏截图](docs/screenshot.png)
+![界面截图](docs/screenshot.png)
 
 ## 功能
 
-- 解析首页「今日要闻」：**6 条头条 + 3 页 × 24 条列表**（站点是服务端一次渲染，插件用「加载更多」逐页展开，不再发请求）
-- 列表为**单行时间轴**：左侧是紧凑时间（`5m` / `2h` / `10-29`）+ 时间轴节点（未读橙色实心、已读灰色空心），中间标题超长省略、hover 自动滚动显示全文，右侧是专题/社区分类标签
-- 「头条 / 今日要闻」分组标题滚动时**吸顶**，随时知道当前在看哪一组；不显示摘要，保持列表清爽
-- 头条分组置顶、已读/未读、上次查看后的新条目分隔线
-- 文章视图：标题、完整时间、来源、作者、正文；站内链接可点；图片默认占位、点击加载；视频显示外链入口；多页文章首屏展开 5 页，超出的点「加载更多页」每次再加载 5 页，全部加载完会提示
-- 专题/活动页（`/zt/`、`/zhuanti/`，前端渲染）：点击标题**直接在新标签页打开原站**（保留 topicId 等参数）；游民圈子社区帖（`club.gamersky.com`）可直接内嵌阅读；JS 重定向壳页会提示并给原文入口
-- 30 分钟后台刷新 + 图标 badge 显示新增条数；打开侧边栏清零
-- 打开先渲染缓存，超过 10 分钟自动静默刷新；离线可读缓存列表和最近 30 篇文章
-- 深浅色（跟随系统 / 手动）、正文字号三档；快捷键 Alt+G 打开侧边栏
+- 解析首页「今日要闻」模块：6 条头条与 3 页列表（每页 24 条），支持分页展开。
+- 列表采用单行布局：左侧为发布时间与时间轴，中间为标题，右侧为内容类型标签（专题、社区）。
+- 标题过长时省略显示，鼠标悬停时自动滚动展示全文；「头条」「今日要闻」分组标题在滚动时吸顶。
+- 支持已读/未读状态，并在上次查看位置之后显示新条目分隔线。
+- 支持站内阅读：解析标题、发布时间、来源、作者与正文；图片在点击后加载，动态图加载原图；视频提供原站链接；多页文章按每批 5 页加载。
+- 社区帖子（club.gamersky.com）同样支持站内阅读。
+- 专题/活动页面由前端脚本渲染，扩展无法读取其内容，点击标题会直接打开原站。
+- 后台每 30 分钟刷新一次，通过扩展图标角标显示新增条目数量；打开侧边栏后角标清零。
+- 支持离线查看已缓存列表与文章，提供浅色/深色主题、三档正文字号，以及 Alt+G 快捷键。
 
-## 下载与安装
+## 环境要求
 
-**方式一：下载 Release（推荐）**
+- Chrome 114 或更高版本（需要 Side Panel API）。
+- 不依赖构建工具，扩展以解压形式加载。
 
-1. 到 [Releases](https://github.com/yuyao110120/gamersky-digest/releases) 下载最新的 `gamersky-digest-v*.zip` 并解压
-2. 打开 `chrome://extensions`，右上角开启「开发者模式」
-3. 点「加载已解压的扩展程序」，选择解压出来的 `gamersky-digest` 目录
-4. 点工具栏的「游民要闻」图标（或按 Alt+G）打开侧边栏；首次打开会自动抓取，等 1–2 秒
+## 安装
 
-**方式二：使用源码**
+### 从 Release 安装
 
-`git clone` 后，在 `chrome://extensions` 选择仓库根目录（含 `manifest.json`）加载。
+1. 在 [Releases](https://github.com/yuyao110120/gamersky-digest/releases) 页面下载最新版本的 zip 包并解压。
+2. 打开 chrome://extensions，启用右上角的「开发者模式」。
+3. 点击「加载已解压的扩展程序」，选择解压后的 gamersky-digest 目录。
+4. 点击工具栏中的「游民要闻」图标，或按 Alt+G 打开侧边栏。
 
-要求 **Chrome 114+**（侧边栏 API）。不上架 Chrome Web Store，纯个人使用。
+### 从源码安装
+
+克隆仓库后，在 chrome://extensions 中选择仓库根目录（包含 manifest.json）进行加载。
 
 ## 使用
 
-- 刷新：右上角 ⟳；状态栏显示「更新于 HH:mm · N 条」
-- 加载更多：列表底部按钮，逐页展开到 72 条列表
-- 新内容：面板开着时后台抓到新内容，顶部出现「有 N 条更新 · 点击刷新」，不会打乱正在看的列表
-- 读文章：点标题 → 正文视图；左上「‹ 返回」回列表（恢复滚动位置）；右上「原文 ↗」跳原站；多页文章底部可「加载更多页」（每次 5 页，加载完显示「已加载全部 N 页」）
-- 菜单（⋯）：主题、正文字号、全部标为已读、打开游民星空
-- 快捷键：Alt+G（macOS 上是 Option+G），可在 `chrome://extensions/shortcuts` 改
+- 刷新：点击右上角刷新按钮。状态栏显示最近一次更新时间和条目数量。
+- 加载更多：列表底部的按钮可展开后续列表页。
+- 阅读文章：点击标题进入正文视图；左上角「返回」回到列表并恢复滚动位置，右上角「原文」打开原站链接。
+- 多页文章：首屏显示 5 页，正文底部提供「加载更多页」按钮，每次加载 5 页；全部加载完成后显示「已加载全部 N 页」。
+- 新内容提示：侧边栏打开期间检测到新内容时，顶部显示「有 N 条更新」。点击后更新列表，不会打断当前浏览。
+- 菜单：可切换主题与正文字号、全部标为已读、打开游民星空。
+- 快捷键：Alt+G（macOS 为 Option+G），可在 chrome://extensions/shortcuts 中修改。
 
-## 数据来源与抓取
+## 数据来源与实现
 
-- 列表：`https://www.gamersky.com/` 首页「今日要闻」模块（服务端渲染，HTML 里就有全部 3 页数据）
-- 文章：直接请求文章页 HTML（/news/、/hardware/ 等 CMS 频道同模板；`club.gamersky.com` 社区帖单独适配 `.qzcmt-content` 结构）
-- 全部请求由扩展自己发起（host_permissions），**不经过任何第三方服务器，不上传数据，不读 Cookie，不注入站点页面**
-- 抓取频率：后台每 30 分钟一次；打开面板时若距上次成功超过 10 分钟再补一次；失败后 60 秒内重试一次
-- 未使用：RSS（站点没有可用 RSS）、登录态、执行站点 JS
+- 列表数据来自首页 https://www.gamersky.com/ 的「今日要闻」模块。该模块由服务端渲染，三页数据均包含在同一个 HTML 中。
+- 文章数据直接请求文章页面 HTML，适用于 /news/、/hardware/ 等使用统一模板的频道。
+- 社区帖子来自 club.gamersky.com，使用独立的页面结构进行解析。
+- 所有请求均由扩展直接发起，不经过第三方服务器，不上传数据，不读取站点 Cookie，也不在站点页面中注入脚本。
+- 后台默认每 30 分钟刷新一次；打开侧边栏时如距上次成功刷新超过 10 分钟，会再刷新一次。刷新失败后 60 秒内重试一次。
+- 不使用 RSS、登录状态或站点 JavaScript。
 
-## 权限说明
+## 权限
 
 | 权限 | 用途 |
 | --- | --- |
-| `sidePanel` | 侧边栏界面 |
-| `alarms` | 30 分钟定时刷新 |
-| `storage` | 本地缓存列表 / 已读 / 文章（实测约 40–50KB；文章缓存上限 30 篇 / 7 天 / 3MB，不会无限增长） |
-| `offscreen` | Service Worker 里没有 DOMParser，后台解析放在不可见的 offscreen 文档里 |
+| sidePanel | 提供侧边栏界面 |
+| alarms | 定时刷新列表 |
+| storage | 保存列表、已读状态与文章缓存 |
+| offscreen | 在不可见的 offscreen 文档中解析 HTML（Service Worker 不提供 DOMParser） |
 
-`host_permissions`：`https://www.gamersky.com/*`、`https://club.gamersky.com/*`（请求首页列表、文章页与社区帖）。
+host_permissions：https://www.gamersky.com/*、https://club.gamersky.com/*，用于请求列表、文章与社区帖子。
+
+## 存储
+
+chrome.storage.local 中保存以下数据，均为有界缓存：
+
+| 数据 | 说明 |
+| --- | --- |
+| 列表 | 每次刷新整体替换，约 80 条 |
+| 已读记录 | 保留 7 天 |
+| 文章缓存 | 最多 30 篇，保留 7 天，总大小不超过 3MB |
+| 设置 | 主题与字号 |
+
+chrome.storage.local 的配额为 10MB，上述数据总量通常不足 100KB。
+
+## 隐私与内容版权
+
+- 扩展不收集、不上传任何用户数据，不进行统计或追踪。
+- 所有请求仅发往 gamersky.com 域名，不经过第三方服务。
+- 游民星空的新闻、图片、Logo 等内容版权归游民星空所有。本项目仅用于个人阅读，不缓存分发内容，不用于商业用途。
+- 扩展图标由游民星空 favicon 重绘，仅用于标识本工具；如涉版权问题，请通过 Issues 联系移除。
 
 ## 目录结构
 
 ```
-manifest.json          MV3 清单
-background.js         定时抓取 / offscreen 编排 / badge / 消息
-offscreen.html|js     后台 DOMParser 宿主
-sidepanel.html|css|js 侧边栏（列表 + 文章两视图）
-lib/parser.js         纯函数解析器（首页 / 文章）
-lib/fetcher.js        网络请求（超时、失败分类）
-lib/store.js          chrome.storage 读写 + 纯合并/裁剪函数
-lib/format.js         时间与文案格式化
-icons/                像素风图标：logo.svg + 16/32/48/128 PNG（tools/make-logo.py 生成）
-assets/favicon.ico    游民星空原始 favicon（图标生成源文件）
-test/                 node --test 单测 + fixtures
-tools/make-logo.py    从 favicon 生成像素 SVG + PNG 的脚本（纯标准库）
+manifest.json          扩展清单（MV3）
+background.js          定时刷新、offscreen 调度、角标与消息
+offscreen.html|js      后台 HTML 解析环境
+sidepanel.html|css|js  侧边栏界面（列表与文章视图）
+lib/parser.js          页面解析
+lib/fetcher.js         网络请求
+lib/store.js           chrome.storage 读写与缓存裁剪
+lib/format.js          时间与文本格式化
+icons/                 图标（SVG 与各尺寸 PNG）
+assets/favicon.ico     图标生成使用的原始 favicon
+test/                  单元测试与测试页面快照
+tools/make-logo.py     图标生成脚本
 ```
 
 ## 开发
 
-- 依赖只为测试：`npm install`（jsdom）
-- 跑测试：`npm test`
-- 解析器 fixture 在 `test/fixtures/`（首页 / 文章 / 多页 / 重定向壳 / 动图 / 站内链接各一份）。站点改版后，抓一份新页面替换对应 fixture，跑测试即可定位选择器问题
-- 图标：`python3 tools/make-logo.py`（读 `assets/favicon.ico`，生成 `icons/logo.svg` 与各尺寸 PNG，不需要第三方库）
+```bash
+npm install   # 仅测试需要（jsdom）
+npm test
+```
+
+- 解析测试使用 test/fixtures/ 中的页面快照。站点改版后，可更新对应快照并运行测试以定位选择器问题。
+- 图标由 python3 tools/make-logo.py 生成，读取 assets/favicon.ico，输出 SVG 与 PNG，仅使用 Python 标准库。
 
 ## 已知限制
 
-- 只做游民星空，不做其它站点
-- 专题/活动页（`/zt/`、`/zhuanti/`，前端渲染）无法内嵌阅读，点击标题会直接打开原站；社区帖已支持内嵌阅读
-- 部分条目是 JS 重定向壳页（如跳专题），阅读视图会提示
-- 图片默认不加载（省流量），点击才加载；动图取站点原图（会动，但通常较大，个别 5MB+）
-- 时间按站点北京时间显示；跨时区时以文章页完整时间为准
-- 站点改版会让选择器失效：连续失败 2 次黄色提示、5 次红色提示，并保留上次成功数据；此时需要更新 `lib/parser.js` 或 `test/fixtures`
-
-## 排障
-
-- 侧边栏空白/报错：打开 `chrome://extensions` →「游民要闻」→ 点「服务工作进程」看日志；侧边栏内右键「检查」看前端报错
-- 后台解析日志：`chrome://extensions` → 游民要闻 → service worker 的 Console；offscreen 文档也会出现在扩展的检查视图里
-- 清空数据：移除扩展重新加载，或在扩展页面执行 `chrome.storage.local.clear()`
-- 问题反馈：[GitHub Issues](https://github.com/yuyao110120/gamersky-digest/issues)（请附 Chrome 版本、扩展版本、service worker 报错截图）
-
-## 设计决策（为什么这么做）
-
-- **侧边栏而非弹窗**：读全文需要高度，侧边栏常驻且不打断当前网页
-- **无构建原生 MV3**：个人工具、依赖少、改完刷新即可
-- **后台解析用 offscreen**：MV3 Service Worker 没有 DOM，用 `offscreen` 文档跑 DOMParser
-- **解析集中在一个文件**：选择器失效时只改一处，fixture 单测兜底
-- **图标来自站点 favicon**：解析游民星空的 16×16 ICO，去掉上世纪的 1px 灰色斜面边框，重绘为纯 `<rect>` 的像素风 SVG（`icons/logo.svg`，任意尺寸都清晰）；Chrome 清单图标不支持 SVG，所以再栅格化为 16/32/48/128 的 PNG
-- **缓存有界**：列表每次刷新整体替换（约 80 条）；已读记录 7 天过期；文章缓存按「最多 30 篇 / 7 天 / 总大小 3MB」三重裁剪，不会随使用时间无限累加
-- **不静默失败**：保留上次数据 + 明确提示，避免「看起来正常其实是空的」
-
-## 开源协议
-
-本项目代码以 [MIT License](LICENSE) 开源。
-
-- 游民星空的内容（新闻、图片、Logo 等）版权归游民星空所有；本项目仅作为**个人阅读用途**的客户端，不缓存分发内容、不用于商业用途。
-- 扩展图标由游民星空 favicon 重绘而来，仅用于识别本工具；如涉版权问题，请在 [Issues](https://github.com/yuyao110120/gamersky-digest/issues) 提出，会立即移除。
+- 仅支持游民星空。
+- 专题/活动页面由前端渲染，无法在扩展内阅读，只能打开原站。
+- 站点结构变更会导致解析失败。扩展会在连续失败时显示提示并保留上次成功的数据，此时需要更新解析逻辑或测试快照。
+- 图片默认不加载以节省流量；动态图会加载原图，文件可能较大。
+- 时间以站点所在时区（北京时间）显示。
 
 ## 版本
 
-0.3.2 — 文章缓存增加总大小上限（30 篇 / 7 天 / 3MB），确保长期使用不会撑大存储
+- 0.3.2 — 文章缓存增加总大小上限。
+- 0.3.1 — 修复分页加载后已展开图片被重置、正文滚动位置丢失的问题。
+- 0.3.0 — 多页文章支持分批加载。
+- 0.2.0 — 专题条目改为直接打开原站；支持社区帖子阅读。
+- 0.1.0 — 首个版本。
 
-0.3.1 — 修复加载更多分页时已展开图片被重置、正文跳回顶部的问题；已加载图片会随文章缓存保留
+## 许可
 
-0.3.0 — 多页文章改为分批加载：首屏 5 页，每次再加载 5 页，全部加载后提示
-
-0.2.0 — 专题条目改为点击直接打开原站；支持游民圈子社区帖内嵌阅读
-
-0.1.0 — 首个可用版本（对应 [Release v0.1.0](https://github.com/yuyao110120/gamersky-digest/releases/tag/v0.1.0)）
+本项目代码以 [MIT License](LICENSE) 开源。
