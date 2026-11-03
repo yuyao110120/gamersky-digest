@@ -47,6 +47,27 @@ test('pruneReadMap：只保留 7 天内的已读记录', () => {
   assert.deepEqual(Object.keys(pruneReadMap(read, now)).sort(), ['fresh']);
 });
 
+test('pruneArticlesMap：总字节超预算时按新到旧裁剪', () => {
+  const now = 100 * ARTICLE_TTL_MS;
+  const bigEntry = (offset) => ({
+    article: { blocks: [{ type: 'text', text: 'x'.repeat(20000) }] },
+    fetchedAt: now - offset,
+  });
+  const cache = {};
+  for (let i = 0; i < 10; i++) cache['url' + i] = bigEntry(i * 1000);
+  const limit = 100000;
+  const pruned = pruneArticlesMap(cache, now, limit);
+  const keys = Object.keys(pruned);
+  assert.ok(keys.length >= 1 && keys.length <= 5, '实际保留 ' + keys.length + ' 条');
+  assert.ok(keys.includes('url0'), '最新一条必须保留');
+  assert.ok(!keys.includes('url9'), '超预算的旧条目应被裁掉');
+  const total = keys.reduce(
+    (sum, key) => sum + new TextEncoder().encode(JSON.stringify(pruned[key])).length,
+    0
+  );
+  assert.ok(total <= limit, '总字节 ' + total + ' 不应超过 ' + limit);
+});
+
 test('pruneArticlesMap：TTL + LRU30', () => {
   const now = 100 * ARTICLE_TTL_MS;
   const cache = {};

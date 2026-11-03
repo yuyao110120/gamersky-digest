@@ -57,7 +57,7 @@ Chrome 侧边栏扩展：把游民星空（gamersky.com）首页的「今日要�
 | --- | --- |
 | `sidePanel` | 侧边栏界面 |
 | `alarms` | 30 分钟定时刷新 |
-| `storage` | 本地缓存列表 / 已读 / 文章（约几百 KB） |
+| `storage` | 本地缓存列表 / 已读 / 文章（实测约 40–50KB；文章缓存上限 30 篇 / 7 天 / 3MB，不会无限增长） |
 | `offscreen` | Service Worker 里没有 DOMParser，后台解析放在不可见的 offscreen 文档里 |
 
 `host_permissions`：`https://www.gamersky.com/*`、`https://club.gamersky.com/*`（请求首页列表、文章页与社区帖）。
@@ -109,6 +109,7 @@ tools/make-logo.py    从 favicon 生成像素 SVG + PNG 的脚本（纯标准�
 - **后台解析用 offscreen**：MV3 Service Worker 没有 DOM，用 `offscreen` 文档跑 DOMParser
 - **解析集中在一个文件**：选择器失效时只改一处，fixture 单测兜底
 - **图标来自站点 favicon**：解析游民星空的 16×16 ICO，去掉上世纪的 1px 灰色斜面边框，重绘为纯 `<rect>` 的像素风 SVG（`icons/logo.svg`，任意尺寸都清晰）；Chrome 清单图标不支持 SVG，所以再栅格化为 16/32/48/128 的 PNG
+- **缓存有界**：列表每次刷新整体替换（约 80 条）；已读记录 7 天过期；文章缓存按「最多 30 篇 / 7 天 / 总大小 3MB」三重裁剪，不会随使用时间无限累加
 - **不静默失败**：保留上次数据 + 明确提示，避免「看起来正常其实是空的」
 
 ## 开源协议
@@ -119,6 +120,8 @@ tools/make-logo.py    从 favicon 生成像素 SVG + PNG 的脚本（纯标准�
 - 扩展图标由游民星空 favicon 重绘而来，仅用于识别本工具；如涉版权问题，请在 [Issues](https://github.com/yuyao110120/gamersky-digest/issues) 提出，会立即移除。
 
 ## 版本
+
+0.3.2 — 文章缓存增加总大小上限（30 篇 / 7 天 / 3MB），确保长期使用不会撑大存储
 
 0.3.1 — 修复加载更多分页时已展开图片被重置、正文跳回顶部的问题；已加载图片会随文章缓存保留
 
