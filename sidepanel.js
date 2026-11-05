@@ -23,6 +23,7 @@ var state = {
   prefs: null,
   view: 'list',
   expandedPages: 1,
+  newBaseAt: 0,
   articleItem: null,
   articleUrl: '',
   article: null,
@@ -105,6 +106,9 @@ async function init() {
   }
   applyPrefs();
   await loadState();
+  // 以「上次打开面板时」的 lastSeenAt 作为本次会话的新内容基准；
+  // 面板打开后后台会更新 lastSeenAt，但本会话内不再用它重算，避免分隔线闪没/移位。
+  state.newBaseAt = (state.meta && state.meta.lastSeenAt) || 0;
   bindEvents();
   chrome.runtime.onMessage.addListener(onRuntimeMessage);
   window.addEventListener('online', renderBanner);
@@ -444,8 +448,7 @@ function renderListContent() {
     return;
   }
 
-  var meta = state.meta || {};
-  var lastSeenAt = meta.lastSeenAt || 0;
+  var dividerBaseAt = state.newBaseAt || 0;
   var maxPage = 1;
   for (var m = 0; m < state.items.length; m++) {
     var p = state.items[m].page || 0;
@@ -465,9 +468,10 @@ function renderListContent() {
 
   for (var i = 0; i < visible.length; i++) {
     var item = visible[i];
-    var isNew = (item.firstSeenAt || 0) > lastSeenAt;
+    // 分隔线只统计「今日要闻」列表项；头条的变化由未读样式体现，避免分隔线跑进头条分组
+    var isNew = !item.headline && (item.firstSeenAt || 0) > dividerBaseAt;
     if (isNew) seenNew = true;
-    if (!dividerPlaced && seenNew && !isNew) {
+    if (!dividerPlaced && seenNew && !isNew && !item.headline) {
       list.appendChild(makeDivider('以上为上次查看后的新内容'));
       dividerPlaced = true;
     }
