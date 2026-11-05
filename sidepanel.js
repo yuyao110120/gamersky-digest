@@ -23,7 +23,6 @@ var state = {
   prefs: null,
   view: 'list',
   expandedPages: 1,
-  listScroll: 0,
   articleItem: null,
   articleUrl: '',
   article: null,
@@ -422,6 +421,12 @@ function makeItem(item, isRead) {
 }
 
 function renderList() {
+  var preservedScrollTop = els.list.scrollTop;
+  renderListContent();
+  els.list.scrollTop = preservedScrollTop;
+}
+
+function renderListContent() {
   var list = els.list;
   var footer = els.listFooter;
   list.textContent = '';
@@ -514,7 +519,6 @@ async function openArticle(item) {
     showToast('已在新标签页打开原文');
     return;
   }
-  state.listScroll = els.list.scrollTop;
   state.articleItem = item;
   state.articleUrl = item.url;
   state.article = null;
@@ -527,7 +531,12 @@ async function openArticle(item) {
   loadArticle(item);
 }
 
+function isCurrentArticle(item) {
+  return state.view === 'article' && state.articleItem !== null && state.articleItem.url === item.url;
+}
+
 async function loadArticle(item) {
+  if (!isCurrentArticle(item)) return;
   var readable = item.type === 'article' || item.type === 'community';
   if (!readable) {
     state.articleLoading = false;
@@ -551,6 +560,7 @@ async function loadArticle(item) {
 
   try {
     var cached = await store.getCachedArticle(item.url);
+    if (!isCurrentArticle(item)) return;
     if (cached && typeof cached.totalPages === 'number' && Array.isArray(cached.allPages)) {
       state.article = {
         title: cached.title,
@@ -567,6 +577,7 @@ async function loadArticle(item) {
       return;
     }
     var html = await fetchArticleHtml(item.url);
+    if (!isCurrentArticle(item)) return;
     var parsed = parseArticlePage(html, item.url);
     if (parsed.kind === 'redirect') {
       state.articleLoading = false;
@@ -591,6 +602,7 @@ async function loadArticle(item) {
       } catch (err) { /* 忽略 */ }
     }
   } catch (err) {
+    if (!isCurrentArticle(item)) return;
     state.articleLoading = false;
     state.articleError = String((err && err.message) || err);
     render();
@@ -624,6 +636,7 @@ function serializeArticle(article) {
 
 async function loadPageBatch(article, count) {
   if (!article || article.loadingMore) return;
+  if (state.article !== article) return;
   var remaining = article.allPages.length - article.nextIndex;
   if (remaining <= 0) return;
   article.loadingMore = true;
@@ -636,13 +649,25 @@ async function loadPageBatch(article, count) {
     var page = article.allPages[article.nextIndex];
     try {
       var html = await fetchArticleHtml(page.url);
+      if (state.article !== article) {
+        article.loadingMore = false;
+        return;
+      }
       var parsed = parseArticlePage(html, page.url);
       if (parsed.kind === 'article') article.blocks = article.blocks.concat(parsed.blocks || []);
       article.nextIndex += 1;
     } catch (err) {
+      if (state.article !== article) {
+        article.loadingMore = false;
+        return;
+      }
       article.loadMoreError = '第 ' + page.page + ' 页加载失败：' + String((err && err.message) || err);
       break;
     }
+  }
+  if (state.article !== article) {
+    article.loadingMore = false;
+    return;
   }
   article.loadingMore = false;
   renderArticle();
@@ -919,7 +944,6 @@ function goBack() {
   state.articleError = '';
   state.articleNotice = null;
   render();
-  if (state.listScroll) els.list.scrollTop = state.listScroll;
 }
 
 async function markAllRead() {
